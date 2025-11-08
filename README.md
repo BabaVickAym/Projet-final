@@ -1,9 +1,9 @@
-python -m venv venv       
+python -m venv venv
 
-venv/Scripts/activate     
+venv/Scripts/activate
 
-pip install fastapi       
+pip install fastapi
 
-uvicorn main:app --reload    pour lancer 
+uvicorn main:app --reload    pour lance
 
 pip install flake8 black  
