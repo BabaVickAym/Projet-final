@@ -6,4 +6,6 @@ pip install fastapi
 
 uvicorn main:app --reload    pour lance
 
-pip install flake8 black  
+pip install flake8 black
+
+pip install pre-commit
