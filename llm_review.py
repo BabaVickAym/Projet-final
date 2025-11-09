@@ -2,6 +2,13 @@ import os
 import sys
 from google import genai
 
+# Le nom du fichier diff est passé en argument
+diff_file_path = sys.argv[1]
+
+# Lire le contenu du diff depuis le fichier
+with open(diff_file_path, "r", encoding="utf-8") as f:
+    diff_content = f.read()
+
 # Le diff est passé en argument au script
 # Le contenu du diff est encodé pour éviter les problèmes de shell
 diff_content = sys.argv[1].replace("%0A", "\n").replace("%0D", "\r").replace("%25", "%")

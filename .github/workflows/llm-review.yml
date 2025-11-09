@@ -37,19 +37,22 @@ jobs:
         echo "DIFF_CONTENT=$ESCAPED_DIFF" >> $GITHUB_OUTPUT
 
     - name: Call LLM for Code Review
-      id: llm_review
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      run: |
-        # Exécuter le script Python en passant le diff en argument
-        # La réponse est stockée dans la variable REVIEW_RESPONSE
-        REVIEW_RESPONSE=$(python llm_review.py "${{ steps.get_diff.outputs.DIFF_CONTENT }}")
+  id: llm_review
+  env:
+    GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+  run: |
+    # Écrire le diff dans un fichier temporaire
+    echo "${{ steps.get_diff.outputs.DIFF_CONTENT }}" > diff.txt
 
-        # Échapper la réponse pour la passer aux étapes suivantes
-        ESCAPED_RESPONSE="${REVIEW_RESPONSE//'%'/'%25'}"
-        ESCAPED_RESPONSE="${ESCAPED_RESPONSE//$'\n'/'%0A'}"
-        ESCAPED_RESPONSE="${ESCAPED_RESPONSE//$'\r'/'%0D'}"
-        echo "REVIEW_RESPONSE=$ESCAPED_RESPONSE" >> $GITHUB_OUTPUT
+    # Exécuter le script Python en passant le nom du fichier en argument
+    # La réponse est stockée dans la variable REVIEW_RESPONSE
+    REVIEW_RESPONSE=$(python llm_review.py diff.txt)
+
+    # Échapper la réponse pour la passer aux étapes suivantes
+    ESCAPED_RESPONSE="${REVIEW_RESPONSE//'%'/'%25'}"
+    ESCAPED_RESPONSE="${ESCAPED_RESPONSE//$'\n'/'%0A'}"
+    ESCAPED_RESPONSE="${ESCAPED_RESPONSE//$'\r'/'%0D'}"
+    echo "REVIEW_RESPONSE=$ESCAPED_RESPONSE" >> $GITHUB_OUTPUT
 
     - name: Comment on PR
       uses: actions/github-script@v7
