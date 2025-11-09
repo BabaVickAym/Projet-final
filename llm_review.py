@@ -28,7 +28,7 @@ Réponds en français.
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 if not GEMINI_API_KEY:
-    # Ceci ne devrait pas arriver si le secret est bien configuré dans le workflow
+    # Ceci ne devrait pas arriver si le secret est bien configuré dans le workflo
     print("Erreur: La clé GEMINI_API_KEY n'est pas configurée.")
     sys.exit(1)
 
