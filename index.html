@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Client - ProjetAPI</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        h1 { color: #333; }
+        .section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"] { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #5cb85c; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #4cae4c; }
+        pre { background-color: #eee; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Client de Test pour ProjetAPI</h1>
+        <p>Assurez-vous que votre API FastAPI est lancée sur <code>http://127.0.0.1:8000</code>.</p>
+
+        <!-- Section POST -->
+        <div class="section">
+            <h2>1. Soumettre un Nouveau Projet (POST /projects )</h2>
+            <label for="studentName">Nom de l'étudiant/groupe:</label>
+            <input type="text" id="studentName" value="Groupe Test">
+
+            <label for="course">Cours:</label>
+            <input type="text" id="course" value="Versionning">
+
+            <label for="githubUrl">URL GitHub:</label>
+            <input type="text" id="githubUrl" value="https://github.com/test/projet">
+
+            <button onclick="submitProject( )">Soumettre Projet</button>
+            <pre id="postResponse"></pre>
+        </div>
+
+        <!-- Section GET -->
+        <div class="section">
+            <h2>2. Lister Tous les Projets (GET /projects)</h2>
+            <button onclick="listProjects()">Lister Projets</button>
+            <pre id="getResponse"></pre>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000';
+
+        async function submitProject( ) {
+            const data = {
+                studentName: document.getElementById('studentName').value,
+                course: document.getElementById('course').value,
+                githubUrl: document.getElementById('githubUrl').value
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/projects`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+                document.getElementById('postResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('postResponse').textContent = `Erreur: ${error.message}`;
+            }
+        }
+
+        async function listProjects() {
+            try {
+                const response = await fetch(`${API_URL}/projects`);
+                const result = await response.json();
+                document.getElementById('getResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('getResponse').textContent = `Erreur: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
