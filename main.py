@@ -3,6 +3,8 @@ from fastapi import FastAPI, HTTPException
 from data_manager import load_data, save_data
 from models import Project, ProjectIn, GradeUpdate
 from typing import List
+from fastapi.responses import HTMLResponse
+from fastapi import Request
 import uuid
 
 # import flask
@@ -128,3 +130,48 @@ def get_projects_by_course(course_name: str):
         pass
 
     return filtered_projects
+
+
+# Gestionnaire personnalisé pour les erreurs 404
+@app.exception_handler(404)
+async def custom_404_handler(request: Request, exc):
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Erreur 404 - Projet non trouvé</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                color: #333;
+                text-align: center;
+                padding: 50px;
+            }
+            h1 {
+                font-size: 50px;
+                color: #ff6347;
+            }
+            p {
+                font-size: 18px;
+            }
+            a {
+                color: #007bff;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>404</h1>
+        <p>Oups ! Le projet que vous cherchez n'existe pas ou a été supprimé.</p>
+        <p>Retournez à la <a href="/">page d'accueil</a> ou essayez une autre recherche.</p>
+        <img src="https://via.placeholder.com/400x200?text=404+Not+Found" alt="Image 404">
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content, status_code=404)
