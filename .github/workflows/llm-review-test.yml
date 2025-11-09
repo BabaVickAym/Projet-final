@@ -1,0 +1,75 @@
+name: LLM Review & Notify (Test)
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [ develop ]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  issues: write
+
+jobs:
+  review_and_notify:
+    # Ajout d'une condition pour ne s'exécuter que sur les PR de test
+    if: github.actor == 'BabaVickAym' # Remplacez par votre nom d'utilisateur GitHub
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get PR diff
+        id: get_diff
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = await github.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              headers: { accept: 'application/vnd.github.v3.diff' }
+            });
+            return pr.data;
+
+      - name: Call Gemini LLM (Test Mode)
+        id: call_llm
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          # Version de test - simuler une réponse
+          echo "Ceci est une réponse de test du LLM.
+
+          Points à améliorer (simulation) :
+          1. Ajouter plus de commentaires
+          2. Considérer l'ajout de tests unitaires
+          3. Vérifier la gestion des erreurs" > llm_response.txt
+
+          # Write to GITHUB_OUTPUT
+          echo "llm_response<<EOF" >> $GITHUB_OUTPUT
+          cat llm_response.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR with LLM review (Test)
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = `@${context.actor}\n\n[TEST MODE] Voici la revue automatique générée :\n\n${process.env.LLM_REVIEW}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body
+            });
+        env:
+          LLM_REVIEW: ${{ steps.call_llm.outputs.llm_response }}
+
+      # Email désactivé en mode test pour éviter le spam
+      - name: Log email content (without sending)
+        run: |
+          echo "En production, un email serait envoyé avec le contenu suivant:"
+          echo "Subject: Revue LLM pour PR #${{ github.event.pull_request.number }} par @${{ github.actor }}"
+          echo "Body: ${{ steps.call_llm.outputs.llm_response }}"
