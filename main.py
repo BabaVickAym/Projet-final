@@ -69,26 +69,57 @@ def get_project(project_id: str):
 # Endpoint 4: PUT /projects/{id}/grade (Permettre à un "professeur" de noter un projet)
 @app.put("/projects/{project_id}/grade", response_model=Project)
 def grade_project(project_id: str, grade_update: GradeUpdate):
-    # STUB - À implémenter dans la Phase 7
-    raise HTTPException(
-        status_code=501, detail="Endpoint PUT /projects/{id}/grade non implémenté."
+    # Trouver l'index du projet
+    project_index = next(
+        (i for i, p in enumerate(data["projects"]) if p["id"] == project_id), -1
     )
+
+    if project_index == -1:
+        raise HTTPException(status_code=404, detail="Projet non trouvé")
+
+    # Mettre à jour la note
+    data["projects"][project_index]["grade"] = grade_update.grade
+
+    # Sauvegarder les données
+    save_data(data)
+
+    # Retourner le projet mis à jour
+    return data["projects"][project_index]
 
 
 # Endpoint 5: DELETE /projects/{id} (Supprimer une soumission de projet)
 @app.delete("/projects/{project_id}", status_code=204)
 def delete_project(project_id: str):
-    # STUB - À implémenter dans la Phase 7
-    raise HTTPException(
-        status_code=501, detail="Endpoint DELETE /projects/{id} non implémenté."
+    global data  # Nécessaire pour modifier la variable globale 'data'
+
+    # Trouver l'index du projet
+    project_index = next(
+        (i for i, p in enumerate(data["projects"]) if p["id"] == project_id), -1
     )
+
+    if project_index == -1:
+        raise HTTPException(status_code=404, detail="Projet non trouvé")
+
+    # Supprimer le projet de la liste
+    del data["projects"][project_index]
+
+    # Sauvegarder les données
+    save_data(data)
+
+    # Retourne un statut 204 No Content
+    return
 
 
 # Endpoint 6: GET /projects/course/{courseName} (Filtrer les projets par cours)
 @app.get("/projects/course/{course_name}", response_model=List[Project])
 def get_projects_by_course(course_name: str):
-    # STUB - À implémenter dans la Phase 7
-    raise HTTPException(
-        status_code=501,
-        detail="Endpoint GET /projects/course/{courseName} non implémenté.",
-    )
+    # Filtrer les projets dont le nom de cours correspond (insensible à la casse)
+    filtered_projects = [
+        p for p in data["projects"] if p["course"].lower() == course_name.lower()
+    ]
+
+    if not filtered_projects:
+        # Le TP ne spécifie pas de 404, nous retournons une liste vide pour rester simple.
+        pass
+
+    return filtered_projects
