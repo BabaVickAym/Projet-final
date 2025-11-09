@@ -25,9 +25,6 @@ app.add_middleware(
 # Chargement initial des données
 data = load_data()
 
-# Chargement initial des données
-data = load_data()
-
 
 @app.get("/")
 def read_root():
@@ -59,10 +56,14 @@ def list_projects():
 # Endpoint 3: GET /projects/{id} (Obtenir les détails d'un projet spécifique)
 @app.get("/projects/{project_id}", response_model=Project)
 def get_project(project_id: str):
-    # STUB - À implémenter dans la Phase 7
-    raise HTTPException(
-        status_code=501, detail="Endpoint GET /projects/{id} non implémenté."
-    )
+    # Chercher le projet dans la liste
+    project_data = next((p for p in data["projects"] if p["id"] == project_id), None)
+
+    if project_data is None:
+        raise HTTPException(status_code=404, detail="Projet non trouvé")
+
+    # Retourner le projet trouvé
+    return project_data
 
 
 # Endpoint 4: PUT /projects/{id}/grade (Permettre à un "professeur" de noter un projet)
