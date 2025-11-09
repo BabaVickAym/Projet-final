@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 app = FastAPI(
-    title="ProjetAPI - Gestion des projets étudiants",
+    title="ProjetAPI- Gestion des projets étudiants",
     description="API pour soumettre, consulter et noter des projets étudiants.",
     version="1.0.0",
 )
