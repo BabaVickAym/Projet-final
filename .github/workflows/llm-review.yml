@@ -1,0 +1,106 @@
+name: LLM Review & Notify
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [ develop ]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  issues: write
+
+jobs:
+  review_and_notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get PR diff
+        id: get_diff
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = await github.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              headers: { accept: 'application/vnd.github.v3.diff' }
+            });
+            // return the raw diff string (will be available as steps.get_diff.outputs.result)
+            return pr.data;
+
+      - name: Call Gemini LLM
+        id: call_llm
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          set -euo pipefail
+          # Prepare prompt (short prefix + diff)
+          PROMPT_TITLE="Tu es un relecteur de code expert. Analyse ce diff. Si le code est bon, fournis des pistes d'amélioration. Si le code contient des bugs, liste-les. Réponds en français."
+          DIFF=${{ steps.get_diff.outputs.result }}
+
+          # Combine prompt and diff. Limit length defensively.
+          INPUT="${PROMPT_TITLE}\n\nDiff:\n${DIFF}"
+
+          # Use jq to safely encode the text into JSON
+          if ! command -v jq >/dev/null 2>&1; then
+            echo "jq is required but not found - installing jq"
+            sudo apt-get update && sudo apt-get install -y jq
+          fi
+
+          PAYLOAD=$(jq -n --arg text "$INPUT" '{prompt: {text: $text}, temperature: 0.2, max_output_tokens: 1024}')
+
+          # Call Gemini-like endpoint (replace with your exact endpoint if different)
+          RESP=$(curl -s -X POST "https://generativemodels.googleapis.com/v1/models/text-bison-001:generate" \
+            -H "Authorization: Bearer ${GEMINI_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+
+          # Try to extract text from common response shapes
+          LLM_TEXT=$(echo "$RESP" | jq -r '.candidates[0].content // .output_text // .result // .text // empty')
+          # Fallback to raw JSON if no text extracted
+          if [ -z "$LLM_TEXT" ]; then
+            LLM_TEXT=$(echo "$RESP" | jq -c .)
+          fi
+
+          # Save to file and expose as output
+          echo "$LLM_TEXT" > llm_response.txt
+
+          # Write to GITHUB_OUTPUT for subsequent steps
+          echo "llm_response<<EOF" >> $GITHUB_OUTPUT
+          cat llm_response.txt
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR with LLM review
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = `@${context.actor}\n\nVoici la revue automatique générée par l'IA:\n\n${process.env.LLM_REVIEW}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body
+            });
+        env:
+          LLM_REVIEW: ${{ steps.call_llm.outputs.llm_response }}
+
+      - name: Send email with LLM review
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Revue LLM pour PR #${{ github.event.pull_request.number }} par @${{ github.actor }}"
+          to: ${{ secrets.TEAM_EMAIL_LIST }}
+          from: ${{ secrets.SMTP_FROM }}
+          body: |
+            Voici la revue générée par l'IA :
+
+            ${{ steps.call_llm.outputs.llm_response }}
