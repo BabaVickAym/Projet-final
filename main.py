@@ -3,6 +3,7 @@ from data_manager import load_data, save_data
 from models import Project, ProjectIn, GradeUpdate
 from typing import List
 import uuid
+
 # import flask
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -91,7 +92,6 @@ def grade_project(project_id: str, grade_update: GradeUpdate):
 # Endpoint 5: DELETE /projects/{id} (Supprimer une soumission de projet)
 @app.delete("/projects/{project_id}", status_code=204)
 def delete_project(project_id: str):
-    global data  # Nécessaire pour modifier la variable globale 'data'
 
     # Trouver l'index du projet
     project_index = next(
