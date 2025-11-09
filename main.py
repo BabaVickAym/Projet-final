@@ -3,8 +3,7 @@ from data_manager import load_data, save_data
 from models import Project, ProjectIn, GradeUpdate
 from typing import List
 import uuid
-
-# import flask
+import flask
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="ProjetAPI - Gestion des Soumissions")
