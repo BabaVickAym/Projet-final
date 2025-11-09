@@ -34,7 +34,12 @@ def read_root():
 
 
 # Endpoint 1: POST /projects (Soumettre un nouveau projet)
-@app.post("/projects", response_model=Project, status_code=201, summary="Cette description est intentionnellement très longue pour provoquer une erreur de linting et tester la CI, elle devrait dépasser la limite de 88 caractères")
+@app.post(
+    "/projects",
+    response_model=Project,
+    status_code=201,
+    summary="Cette description est intentionnellement très longue pour provoquer une erreur de linting et tester la CI, elle devrait dépasser la limite de 88 caractères",
+)
 def create_project(project_in: ProjectIn):
     # Générer un ID unique
     new_id = str(uuid.uuid4())
