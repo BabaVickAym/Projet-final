@@ -58,11 +58,14 @@ def list_projects():
     return data["projects"]
 
 
-# Endpoint 3: GET /projects/{project_id} (Obtenir les détails d'un projet spécifique)
-@app.get("/projects/{project_id}", response_model=Project)
-def get_project(project_id: str):
+# Endpoint 3: GET /projects/{id} (Obtenir les détails d'un projet spécifique)
+@app.get("/projects/{id}", response_model=Project)
+def get_project(id: str):
+    # Lire db.json à chaque requête pour garantir des données fraîches
+    data = load_data()
+
     # Chercher le projet dans la liste
-    project_data = next((p for p in data["projects"] if p["id"] == project_id), None)
+    project_data = next((p for p in data["projects"] if p["id"] == id), None)
 
     if project_data is None:
         raise HTTPException(status_code=404, detail="Projet non trouvé")
