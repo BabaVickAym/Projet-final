@@ -11,7 +11,11 @@ app = FastAPI(
 DB_PATH = Path("db.json")
 
 
-@app.get("/projects", summary="Lister tous les projets", tags=["Projets"])
+@app.get(
+    "/projects",
+    summary="Lister tous les projets",
+    tags=["Projets"],
+)
 def get_projects():
     """
     Retourne la liste de tous les projets soumis.
