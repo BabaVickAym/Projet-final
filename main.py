@@ -142,35 +142,63 @@ async def custom_404_handler(request: Request, exc):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Erreur 404 - Projet non trouvé</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
         <style>
             body {
-                font-family: Arial, sans-serif;
-                background-color: #f4f4f4;
+                font-family: 'Poppins', sans-serif;
+                background: linear-gradient(135deg, #f4f4f4 0%, #e0e0e0 100%);
                 color: #333;
                 text-align: center;
                 padding: 50px;
+                margin: 0;
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
             }
             h1 {
-                font-size: 50px;
+                font-size: 80px;
                 color: #ff6347;
+                margin: 0;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+                animation: bounce 1s ease-in-out infinite;
             }
             p {
-                font-size: 18px;
+                font-size: 20px;
+                max-width: 600px;
+                margin: 20px auto;
             }
-            a {
-                color: #007bff;
+            .button {
+                display: inline-block;
+                padding: 12px 24px;
+                background-color: #007bff;
+                color: white;
                 text-decoration: none;
+                border-radius: 5px;
+                font-weight: 600;
+                transition: background-color 0.3s ease;
             }
-            a:hover {
-                text-decoration: underline;
+            .button:hover {
+                background-color: #0056b3;
+            }
+            img {
+                max-width: 400px;
+                margin: 20px 0;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-10px); }
             }
         </style>
     </head>
     <body>
         <h1>404</h1>
-        <p>Oups ! Le projet que vous cherchez n'existe pas ou a été supprimé.</p>
-        <p>Retournez à la <a href="/">page d'accueil</a> ou essayez une autre recherche.</p>
-        <img src="https://via.placeholder.com/400x200?text=404+Not+Found" alt="Image 404">
+        <p>Oups ! Le projet que vous cherchez n'existe pas ou a été supprimé. Peut-être a-t-il pris des vacances inattendues ?</p>
+        <img src="https://deerdesigner.com/wp-content/uploads/2024/07/Article-59-creative-404-pages_Title-card-opt-4.png.webp" alt="Illustration 404 créative">
+        <a href="/" class="button">Retourner à l'accueil</a>
     </body>
     </html>
     """
