@@ -32,4 +32,4 @@ if not data or "projects" not in data or not data["projects"]:
     save_data({"projects": []})
     print("✅ Fichier initialisé avec succès : la liste des projets est vide pour le moment.")
 else:
-    print("✅ Les données existent déjà : aucune initialisation nécessaire.")
+    print("✅ données existant déjà : aucune initialisation nécessaire.")
