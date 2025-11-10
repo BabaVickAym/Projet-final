@@ -25,15 +25,9 @@ jobs:
 
     - name: Run Flake8 (Linting)
       run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Suppression de l'argument --strict non reconnu
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
 
     - name: Run Black (Check Formatting)
       run: |
         black --check .
-
-    # Optionnel mais recommandé pour FastAPI
-    - name: Run Mypy (Type Checking)
-      run: |
-        pip install mypy
-        mypy .

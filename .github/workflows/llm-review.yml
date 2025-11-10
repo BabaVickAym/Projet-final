@@ -44,9 +44,12 @@ jobs:
           # Installation de jq pour manipuler le JSON
           sudo apt-get update && sudo apt-get install -y jq
 
-          # Construction du payload JSON sur une seule ligne pour éviter les erreurs de syntaxe shell
-          # Note: Les variables d'environnement sont utilisées directement dans la chaîne
-          echo '{"contents": [ { "parts": [ { "text": "'"$PROMPT_TEXT"'" }, { "text": "'"$DIFF_CONTENT"'" } ] } ] }' > payload.json
+          # Construction du payload JSON en utilisant jq pour gérer l'échappement
+          # La commande est répartie sur plusieurs lignes avec des anti-slashs pour la lisibilité
+          jq -n \
+            --arg prompt "$PROMPT_TEXT" \
+            --arg diff "$DIFF_CONTENT" \
+            '{ "contents": [ { "parts": [ { "text": $prompt }, { "text": $diff } ] } ] }' > payload.json
 
           # Appel à l'API Gemini
           RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}" \
