@@ -5,7 +5,7 @@ Ce projet utilise **FastAPI**, un framework web moderne et performant pour crée
 
 ## Prérequis
 
-- **Python** : Version 3.8 ou supérieure
+- **Python** :minimum  Version 3.8 ou supérieure
 - **pip** : pour la gestion de paquets Python
 - Un terminal (ou une invite de commande)
 
@@ -15,4 +15,4 @@ Suivre des étapes pour configurer l'environnement de développement.
 
 ### 1. Créer un environnement virtuel
 
-Creer un environnement virtuel pour isoler les dépendances du projet.
+Creer un environnement virtuel pour isoler la dépendances du projet.
