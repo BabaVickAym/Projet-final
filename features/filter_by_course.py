@@ -1,24 +1,16 @@
-from fastapi import FastAPI, HTTPException
 import json
-import os
+from fastapi import FastAPI, HTTPException
 
 app = FastAPI()
 
-DB_FILE = "db.json"
+DB_FILE = "db_test.json"  # fichier local de test
 
-# Charger les projets depuis le fichier
 def load_projects():
-    if not os.path.exists(DB_FILE):
-        return []
-    with open(DB_FILE, "r") as f:
-        return json.load(f)
+    with open(DB_FILE, "r", encoding="utf-8") as f:
+        return json.load(f).get("projects", [])
 
 @app.get("/projects/course/{course_name}")
 def get_projects_by_course(course_name: str):
-    """
-    Filtrer les projets par nom de cours.
-    Exemple : GET /projects/course/DevOps
-    """
     projects = load_projects()
     filtered = [p for p in projects if p.get("course", "").lower() == course_name.lower()]
 
