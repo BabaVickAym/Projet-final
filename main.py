@@ -3,7 +3,6 @@ from pydantic import BaseModel, HttpUrl
 from typing import Optional, Dict
 from uuid import uuid4
 
-app = FastAPI()
 
 
 class Project(BaseModel):
