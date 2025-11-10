@@ -21,10 +21,18 @@ jobs:
       - name: Get Pull Request Diff
         id: get_diff
         run: |
+          # Obtenir le diff entre la branche de base (develop) et la branche de la PR
           git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > pr_diff.txt
-          echo "diff_content<<EOF" >> $GITHUB_OUTPUT
-          cat pr_diff.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Lire le diff et l'échapper pour le passer au LLM
+          DIFF_CONTENT=$(cat pr_diff.txt)
+
+          # Échapper le contenu pour le passer aux étapes suivantes
+          ESCAPED_DIFF="${DIFF_CONTENT//'%'/'%25'}"
+          ESCAPED_DIFF="${ESCAPED_DIFF//$'\n'/'%0A'}"
+          ESCAPED_DIFF="${ESCAPED_DIFF//$'\r'/'%0D'}"
+
+          echo "diff_content=$ESCAPED_DIFF" >> $GITHUB_OUTPUT
 
       - name: Call Gemini API for Code Review
         id: call_llm
@@ -33,24 +41,44 @@ jobs:
           DIFF_CONTENT: ${{ steps.get_diff.outputs.diff_content }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
+          # Installation de jq pour manipuler le JSON
+          sudo apt-get update && sudo apt-get install -y jq
+
+          # Création du payload JSON pour l'API Gemini
           jq -n \
             --arg prompt "$PROMPT_TEXT" \
             --arg diff "$DIFF_CONTENT" \
             '{ "contents": [ { "parts": [ { "text": $prompt }, { "text": $diff } ] } ] }' > payload.json
 
+          # Appel à l'API Gemini
           RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}" \
             -H "Content-Type: application/json" \
-            -d @payload.json )
+            -d @payload.json  )
 
+          # Extraction de la réponse textuelle
           REVIEW_TEXT=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // "⚠️ Erreur : Impossible d’analyser la réponse de Gemini."')
 
+          # Gestion des erreurs API
           ERROR=$(echo "$RESPONSE" | jq -r '.error.message // empty')
           if [ -n "$ERROR" ]; then
             REVIEW_TEXT="🚨 **Erreur Gemini API** : $ERROR"
           fi
 
+          # --- Préparation des Outputs ---
+
+          # 1. Output pour le commentaire GitHub (Markdown)
           echo "review_text<<EOF" >> $GITHUB_OUTPUT
           echo "$REVIEW_TEXT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # 2. Output pour l'email (HTML)
+          # Remplacement des sauts de ligne par
+          et des **gras** par <strong>
+          HTML_REVIEW_TEXT=$(echo "$REVIEW_TEXT" | sed ':a;N;$!ba;s/\n/
+          /g' | sed 's/\*\*(.*)\*\*/<strong>\1<\/strong>/g')
+
+          echo "html_review_text<<EOF" >> $GITHUB_OUTPUT
+          echo "$HTML_REVIEW_TEXT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Comment on PR
@@ -68,9 +96,6 @@ jobs:
               body: reviewBody
             });
 
-      # =================================================================
-      # CORRECTION FINALE : Utilisation de 'html_body' au lieu de 'body'
-      # =================================================================
       - name: Send Email Notification (HTML)
         uses: dawidd6/action-send-mail@v3
         with:
@@ -82,7 +107,6 @@ jobs:
           to: ${{ secrets.TEAM_EMAIL_LIST }}
           from: GitHub Actions Bot <${{ secrets.MAIL_USERNAME }}>
           content_type: text/html
-          # On utilise 'html_body' pour que le client de messagerie interprète le HTML
           html_body: |
             <!DOCTYPE html>
             <html>
@@ -108,10 +132,11 @@ jobs:
                   <div class="pr-info">
                     <strong>Pull Request :</strong> <a href="${{ github.event.pull_request.html_url }}">#${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}</a>
 
+
                     <strong>Auteur :</strong> @${{ github.actor }}
                   </div>
                   <h2>Analyse de Gemini</h2>
-                  <pre>${{ steps.call_llm.outputs.review_text }}</pre>
+                  <pre>${{ steps.call_llm.outputs.html_review_text }}</pre>
                 </div>
                 <div class="footer">
                   Généré par le workflow "${{ github.workflow }}"
