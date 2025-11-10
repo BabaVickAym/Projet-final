@@ -15,4 +15,4 @@ Suivre des étapes pour configurer l'environnement de développement.
 
 ### 1. Créer un environnement virtuel
 
-Créez un environnement virtuel pour isoler les dépendances du projet.
+Creer un environnement virtuel pour isoler les dépendances du projet.
