@@ -6,7 +6,7 @@ Ce projet utilise **FastAPI**, un framework web moderne et performant pour crée
 ## Prérequis
 
 - **Python** : Version 3.8 ou supérieure
-- **pip** : Gestionnaire de paquets Python
+- **pip** : pour la gestion de paquets Python
 - Un terminal (ou une invite de commande)
 
 ## Installation
