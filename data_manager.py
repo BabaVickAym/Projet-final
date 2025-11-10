@@ -26,5 +26,10 @@ def save_data(data: Dict[str, List[Dict[str, Any]]]):
 
 
 # Initialisation du fichier si nécessaire
-if not load_data().get("projects"):
+data = load_data()
+
+if not data or "projects" not in data or not data["projects"]:
     save_data({"projects": []})
+    print("✅ Fichier initialisé avec succès : la liste des projets est vide .")
+else:
+    print("✅ données existant déjà : aucune initialisation nécessaire.")

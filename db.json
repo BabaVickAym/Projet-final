@@ -4,5 +4,12 @@
     "studentName": "Ly K",
     "course": "DevOps",
     "githubUrl": "https://github.com/LyK/project"
+  },
+  {
+    "id": "def456",
+    "studentName": "Ravel Pessy",
+    "course": "Full Stack Web",
+    "githubUrl": "https://github.com/RavelPessy/fullstack-project"
   }
 ]
+

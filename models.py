@@ -20,3 +20,16 @@ class GradeUpdate(BaseModel):
     grade: int = Field(
         ..., ge=0, le=20, description="Note à attribuer (entre 0 et 20)."
     )
+    comment: Optional[str] = Field(
+        None,
+        max_length=255,
+        description="Commentaire facultatif de l'évaluateur concernant le projet."
+    )
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "grade": 17,
+                "comment": "Très bon projet, bien structuré et documenté."
+            }
+        }

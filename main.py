@@ -7,7 +7,7 @@ import uuid
 # import flask
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="ProjetAPI - Gestion des Soumissions")
+app = FastAPI(title="ProjetAPI - Gestion Soumissions")
 
 
 # --- Début de la correction CORS ---
