@@ -1,0 +1,16 @@
+{
+  "projects": [
+    {
+      "id": 1,
+      "studentName": "Dellia Biloa",
+      "course": "DevOps",
+      "githubUrl": ""
+    },
+    {
+      "id": 2,
+      "studentName": "Aymerick Baba",
+      "course": "Python API",
+      "githubUrl": ""
+    }
+  ]
+}
