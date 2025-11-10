@@ -24,7 +24,7 @@ jobs:
           # Obtenir le diff entre la branche de base (develop) et la branche de la PR
           git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > pr_diff.txt
 
-          # Lire le diff et l'échapper pour le passer au LLM
+          # Lire le diff
           DIFF_CONTENT=$(cat pr_diff.txt)
 
           # Échapper le contenu pour le passer aux étapes suivantes
@@ -44,11 +44,9 @@ jobs:
           # Installation de jq pour manipuler le JSON
           sudo apt-get update && sudo apt-get install -y jq
 
-          # Création du payload JSON pour l'API Gemini
-          jq -n \
-            --arg prompt "$PROMPT_TEXT" \
-            --arg diff "$DIFF_CONTENT" \
-            '{ "contents": [ { "parts": [ { "text": $prompt }, { "text": $diff } ] } ] }' > payload.json
+          # Construction du payload JSON sur une seule ligne pour éviter les erreurs de syntaxe shell
+          # Note: Les variables d'environnement sont utilisées directement dans la chaîne
+          echo '{"contents": [ { "parts": [ { "text": "'"$PROMPT_TEXT"'" }, { "text": "'"$DIFF_CONTENT"'" } ] } ] }' > payload.json
 
           # Appel à l'API Gemini
           RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}" \
