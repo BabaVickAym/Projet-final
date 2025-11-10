@@ -1,4 +1,3 @@
-
 # Projet FastAPI
 
 Ce projet utilise **FastAPI**, un framework web moderne et performant pour créer des APIs en Python. Ce fichier README fournit les instructions nécessaires pour configurer et lancer un projet localement.
@@ -13,6 +12,6 @@ Ce projet utilise **FastAPI**, un framework web moderne et performant pour crée
 
 Suivre des étapes pour configurer l'environnement de développement.
 
-### 1. Créer un environnement virtuel
+### 1\. Créer un environnement virtuel
 
 Creer un environnement virtuel pour isoler la dépendances du projet.
