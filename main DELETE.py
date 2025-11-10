@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Optional, Dict
+from typing import Optional
 from uuid import uuid4
 
 app = FastAPI()
