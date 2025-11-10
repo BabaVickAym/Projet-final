@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Ajouter le dossier courant au chemin de recherche des modules
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from fastapi import FastAPI, HTTPException
 from typing import List
 from uuid import uuid4

@@ -1,14 +1,19 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, HttpUrl
 from typing import Optional
 
-class ProjectIn(BaseModel):
+class ProjectCreate(BaseModel):
     studentName: str
     course: str
-    githubUrl: str
+    githubUrl: Optional[HttpUrl] = None
 
-class Project(ProjectIn):
-    id: str
-    grade: Optional[int] = None
+class ProjectUpdate(BaseModel):
+    studentName: Optional[str] = None
+    course: Optional[str] = None
+    githubUrl: Optional[HttpUrl] = None
 
 class GradeUpdate(BaseModel):
-    grade: int = Field(..., ge=0, le=20)
+    grade: int
+
+class ProjectResponse(ProjectCreate):
+    id: int
+    grade: Optional[int] = None
