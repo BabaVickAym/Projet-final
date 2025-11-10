@@ -11,7 +11,7 @@ Ce projet utilise **FastAPI**, un framework web moderne et performant pour crée
 
 ## Installation
 
-Suivez ces étapes pour configurer l'environnement de développement.
+Suivre des étapes pour configurer l'environnement de développement.
 
 ### 1. Créer un environnement virtuel
 
