@@ -1,28 +1,13 @@
-from fastapi import FastAPI, HTTPException
-import json
-import os
+# main.py
+from fastapi import FastAPI
+from features.filter_by_course import router as course_router
 
-app = FastAPI()
+app = FastAPI(title="ProjetAPI", description="API pour la gestion des projets étudiants.")
 
-DB_FILE = "db.json"
+# Inclusion du routeur
+app.include_router(course_router)
 
-# Charger les projets depuis le fichier
-def load_projects():
-    if not os.path.exists(DB_FILE):
-        return []
-    with open(DB_FILE, "r") as f:
-        return json.load(f)
-
-@app.get("/projects/course/{course_name}")
-def get_projects_by_course(course_name: str):
-    """
-    Filtrer les projets par nom de cours.
-    Exemple : GET /projects/course/DevOps
-    """
-    projects = load_projects()
-    filtered = [p for p in projects if p.get("course", "").lower() == course_name.lower()]
-
-    if not filtered:
-        raise HTTPException(status_code=404, detail="Aucun projet trouvé pour ce cours")
-
-    return {"course": course_name, "projects": filtered}
+# Optionnel : un endpoint racine simple
+@app.get("/")
+async def read_root():
+    return {"message": "Bienvenue sur ProjetAPI"}
