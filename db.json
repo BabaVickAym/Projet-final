@@ -1,18 +1,8 @@
-{
-    "projects": [
-        {
-            "studentName": "baba",
-            "course": "git",
-            "githubUrl": "https://github.com/BabaVickAym/Projet-final.git",
-            "id": "c020d568-e2fc-406d-866d-0be772bf01ef",
-            "grade": 18
-        },
-        {
-            "studentName": "Groupe Test",
-            "course": "Versionning",
-            "githubUrl": "https://github.com/test/projet",
-            "id": "37e6f950-e196-49af-8b0f-b2b70147fe64",
-            "grade": null
-        }
-    ]
-}
+[
+  {
+    "id": "abc123",
+    "studentName": "Ly K",
+    "course": "DevOps",
+    "githubUrl": "https://github.com/LyK/project"
+  }
+]
