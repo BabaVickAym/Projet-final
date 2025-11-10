@@ -1,133 +1,101 @@
-
 from fastapi import FastAPI, HTTPException
-from data_manager import load_data, save_data
-from models import Project, ProjectIn, GradeUpdate
 from typing import List
-import uuid
+from uuid import uuid4
+from models import ProjectCreate, ProjectUpdate, ProjectResponse, GradeUpdate
+from data_manager import load_data, save_data
+from features.filter_by_course import router as filter_router
 
-# import flask
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI(title="ProjetAPI - Gestion des Soumissions")
-
-
-# --- Début de la correction CORS ---
-origins = [
-    "*",  # Autorise toutes les origines pour le développement
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+app = FastAPI(
+    title="Projet Final FastAPI",
+    description="API de gestion de projets étudiants avec filtrage, notation et CRUD complet.",
+    version="2.0.0"
 )
-# --- Fin de la correction CORS ---
 
-# Chargement initial des données
-data = load_data()
-
-
-@app.get("/")
-def read_root():
-    return {"message": "Bienvenue sur ProjetAPI"}
+# Inclure les routes modularisées
+app.include_router(filter_router)
 
 
-# Endpoint 1: POST /projects (Soumettre un nouveau projet)
-@app.post(
-    "/projects",
-    response_model=Project,
-    status_code=201,
-    summary="Cette description est intentionnellement très longue pour provoquer une erreur de linting et tester la CI, elle devrait dépasser la limite de 88 caractères",
-)
-def create_project(project_in: ProjectIn):
-    # Générer un ID unique
-    new_id = str(uuid.uuid4())
-    # Créer l'objet Project complet
-    new_project = Project(id=new_id, **project_in.model_dump())
+# ✅ Lister tous les projets
+@app.get("/projects", response_model=List[ProjectResponse])
+def get_projects():
+    data = load_data()
+    return data.get("projects", [])
 
-    # Ajouter à la liste et sauvegarder
-    data["projects"].append(new_project.model_dump())
+
+# ✅ Récupérer un projet par ID
+@app.get("/projects/{project_id}", response_model=ProjectResponse)
+def get_project(project_id: str):
+    data = load_data()
+    for project in data.get("projects", []):
+        if project["id"] == project_id:
+            return project
+    raise HTTPException(status_code=404, detail="Projet non trouvé")
+
+
+# ✅ Créer un nouveau projet
+@app.post("/projects", response_model=ProjectResponse, status_code=201)
+def create_project(project: ProjectCreate):
+    data = load_data()
+    projects = data.get("projects", [])
+
+    # Génération d'un ID unique (UUID)
+    new_id = str(uuid4())
+
+    new_project = {
+        "id": new_id,
+        "studentName": project.studentName,
+        "course": project.course,
+        "githubUrl": project.githubUrl,
+        "grade": None
+    }
+
+    projects.append(new_project)
+    data["projects"] = projects
     save_data(data)
 
     return new_project
 
 
-# Endpoint 2: GET /projects (Lister tous les projets)
-@app.get("/projects", response_model=List[Project])
-def list_projects():
-    # Retourne la liste des projets
-    return data["projects"]
+# ✅ Mettre à jour un projet existant
+@app.put("/projects/{project_id}", response_model=ProjectResponse)
+def update_project(project_id: str, updated_data: ProjectUpdate):
+    data = load_data()
+    for project in data.get("projects", []):
+        if project["id"] == project_id:
+            if updated_data.studentName is not None:
+                project["studentName"] = updated_data.studentName
+            if updated_data.course is not None:
+                project["course"] = updated_data.course
+            if updated_data.githubUrl is not None:
+                project["githubUrl"] = updated_data.githubUrl
+
+            save_data(data)
+            return project
+    raise HTTPException(status_code=404, detail="Projet non trouvé")
 
 
-# Endpoint 3: GET /projects/{id} (Obtenir les détails d'un projet spécifique)
-@app.get("/projects/{project_id}", response_model=Project)
-def get_project(project_id: str):
-    # Chercher le projet dans la liste
-    project_data = next((p for p in data["projects"] if p["id"] == project_id), None)
-
-    if project_data is None:
-        raise HTTPException(status_code=404, detail="Projet non trouvé")
-
-    # Retourner le projet trouvé
-    return project_data
-
-
-# Endpoint 4: PUT /projects/{id}/grade (Permettre à un "professeur" de noter un projet)
-@app.put("/projects/{project_id}/grade", response_model=Project)
-def grade_project(project_id: str, grade_update: GradeUpdate):
-    # Trouver l'index du projet
-    project_index = next(
-        (i for i, p in enumerate(data["projects"]) if p["id"] == project_id), -1
-    )
-
-    if project_index == -1:
-        raise HTTPException(status_code=404, detail="Projet non trouvé")
-
-    # Mettre à jour la note
-    data["projects"][project_index]["grade"] = grade_update.grade
-
-    # Sauvegarder les données
-    save_data(data)
-
-    # Retourner le projet mis à jour
-    return data["projects"][project_index]
-
-
-# Endpoint 5: DELETE /projects/{id} (Supprimer une soumission de projet)
+# ✅ Supprimer un projet
 @app.delete("/projects/{project_id}", status_code=204)
 def delete_project(project_id: str):
+    data = load_data()
+    projects = data.get("projects", [])
+    new_projects = [p for p in projects if p["id"] != project_id]
 
-    # Trouver l'index du projet
-    project_index = next(
-        (i for i, p in enumerate(data["projects"]) if p["id"] == project_id), -1
-    )
-
-    if project_index == -1:
+    if len(new_projects) == len(projects):
         raise HTTPException(status_code=404, detail="Projet non trouvé")
 
-    # Supprimer le projet de la liste
-    del data["projects"][project_index]
-
-    # Sauvegarder les données
+    data["projects"] = new_projects
     save_data(data)
-
-    # Retourne un statut 204 No Content
-    return
+    return {"message": "Projet supprimé avec succès"}
 
 
-# Endpoint 6: GET /projects/course/{courseName} (Filtrer les projets par cours)
-@app.get("/projects/course/{course_name}", response_model=List[Project])
-def get_projects_by_course(course_name: str):
-    # Filtrer les projets dont le nom de cours correspond (insensible à la casse)
-    filtered_projects = [
-        p for p in data["projects"] if p["course"].lower() == course_name.lower()
-    ]
-
-    if not filtered_projects:
-        # Le TP ne spécifie pas de 404, nous retournons une liste vide pour rester simple.
-        pass
-
-    return filtered_projects
-
+# ✅ Noter un projet
+@app.put("/projects/{project_id}/grade", response_model=ProjectResponse)
+def grade_project(project_id: str, grade_data: GradeUpdate):
+    data = load_data()
+    for project in data.get("projects", []):
+        if project["id"] == project_id:
+            project["grade"] = grade_data.grade
+            save_data(data)
+            return project
+    raise HTTPException(status_code=404, detail="Projet non trouvé")
