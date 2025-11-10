@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, HTTPException
 from data_manager import load_data, save_data
 from models import Project, ProjectIn, GradeUpdate
@@ -129,3 +130,4 @@ def get_projects_by_course(course_name: str):
         pass
 
     return filtered_projects
+
