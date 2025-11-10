@@ -1,7 +1,7 @@
 
 # Projet FastAPI
 
-Ce projet utilise **FastAPI**, un framework web moderne et performant pour créer des APIs en Python. Ce fichier README fournit les instructions nécessaires pour configurer et lancer le projet localement.
+Ce projet utilise **FastAPI**, un framework web moderne et performant pour créer des APIs en Python. Ce fichier README fournit les instructions nécessaires pour configurer et lancer un projet localement.
 
 ## Prérequis
 
